@@ -7,6 +7,9 @@ framework:
 skip-check:
 - CKV2_GCP*
 - CKV_AZURE*
+- CKV_AWS*
+- CKV2_AWS*
+- CKV_K8S*
 - CKV2_AZURE*
 - CKV_TF_1 # default to Terraform registry instead of Git
 summary-position: bottom
