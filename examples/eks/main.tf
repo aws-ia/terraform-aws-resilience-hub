@@ -11,8 +11,8 @@ terraform {
 
   backend "s3" {
     bucket = "$BUCKET"
-    key    = "$path/to/file.tfstate"
-    region = "$BUCKET_REGION"
+    key    = "eks.tfstate"
+    region = "us-west-2"
   }
 }
 
@@ -338,14 +338,14 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
   data = {
     mapRoles = yamlencode([
       {
-        rolearn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.arh_role_name}"
+        rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.arh_role_name}"
         username = "AwsResilienceHubAssessmentEKSAccessRole"
-        groups = ["resilience-hub-eks-access-group"]
+        groups   = ["resilience-hub-eks-access-group"]
       },
       {
-        rolearn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/Admin"
+        rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/Admin"
         username = "Admin-${data.aws_caller_identity.current.user_id}"
-        groups = ["admin"]
+        groups   = ["admin"]
       }
     ])
   }
@@ -356,16 +356,17 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
 ################################################################################
 # Resilience Hub App
 ################################################################################
+locals {
+  s3_bucket_name     = "$BUCKET"
+  s3_state_file_path = "eks.tfstate"
+  s3_bucket_region   = "us-west-2"
+  arh_app_name       = "Application-${random_string.session.id}"
+  arh_role_name      = "ArhExecutorRole-${random_string.session.id}"
+}
 
 resource "random_string" "session" {
   length  = 8
   special = false
-}
-
-locals {
-  s3_state_file_url = "https://$BUCKET.s3.$BUCKET_REGION.amazonaws.com/$path/to/file.tfstate"
-  arh_app_name      = "Application-${random_string.session.id}"
-  arh_role_name     = "ArhExecutorRole-${random_string.session.id}"
 }
 
 module "resiliencehub_app" {
@@ -381,7 +382,7 @@ module "resiliencehub_app" {
         {
           # Must be the deployment name
           resource_name            = "app-2048"
-          resource_type            = "AWS::EKS::Deployment"
+          resource_type = "AWS::EKS::Deployment"
           # Must be formatted as clusterArn/namespace/uid
           resource_identifier      = "${module.eks.cluster_arn}/${local.app_name}/${kubernetes_deployment_v1.this.metadata[0].uid}"
           resource_identifier_type = "Native"
@@ -390,7 +391,9 @@ module "resiliencehub_app" {
       ]
     }
   ]
-  arh_role_name     = local.arh_role_name
-  s3_state_file_url = local.s3_state_file_url
+  s3_bucket_name     = local.s3_bucket_name
+  s3_state_file_path = local.s3_state_file_path
+  s3_bucket_region   = local.s3_bucket_region
+  arh_role_name      = local.arh_role_name
 }
 

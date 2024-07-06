@@ -1,7 +1,8 @@
 # checkov:skip=CKV_*
 
 locals {
-  statefile_name = split("/", var.s3_state_file_url)[length(split("/", var.s3_state_file_url)) - 1]
+  s3_state_file_url = "https://${var.s3_bucket_name}.s3.${var.s3_bucket_region}.amazonaws.com/${var.s3_state_file_path}"
+  statefile_name    = split("/", local.s3_state_file_url)[length(split("/", local.s3_state_file_url)) - 1]
 
   declared_app_components = [
     for app_component in var.app_components :
@@ -41,7 +42,7 @@ locals {
     {
       mapping_type = "Terraform"
       physical_resource_id = {
-        identifier = var.s3_state_file_url
+        identifier = local.s3_state_file_url
         type       = "Native"
       }
       terraform_source_name = local.statefile_name

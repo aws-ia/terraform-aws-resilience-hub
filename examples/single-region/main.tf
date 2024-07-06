@@ -6,6 +6,14 @@
 
 # checkov:skip=CKV_*
 
+locals {
+  s3_bucket_name     = "$BUCKET"
+  s3_state_file_path = "single-region.tfstate"
+  s3_bucket_region   = "us-west-2"
+  app_name           = "Application-${random_string.session.id}"
+  arh_role_name      = "ArhExecutorRole-${random_string.session.id}"
+}
+
 terraform {
   required_providers {
     aws = {
@@ -18,15 +26,9 @@ terraform {
 
   backend "s3" {
     bucket = "$BUCKET"
-    key    = "$path/to/file.tfstate"
-    region = "$BUCKET_REGION"
+    key    = "single-region.tfstate"
+    region = "us-west-2"
   }
-}
-
-locals {
-  s3_state_file_url = "https://$BUCKET.s3.$BUCKET_REGION.amazonaws.com/$path/to/file.tfstate"
-  app_name          = "Application-${random_string.session.id}"
-  arh_role_name     = "ArhExecutorRole-${random_string.session.id}"
 }
 
 resource "random_string" "session" {
@@ -51,15 +53,15 @@ resource "aws_sqs_queue" "sqs_queue" {
 }
 
 module "resiliencehub_app" {
-  app_name = local.app_name
-  source   = "../.."
-  rto      = 300
-  rpo      = 60
+  app_name       = local.app_name
+  source         = "../.."
+  rto            = 300
+  rpo            = 60
   app_components = [
     {
       app_component_name = "DynamoDBComponent"
       app_component_type = "AWS::ResilienceHub::DatabaseAppComponent"
-      resources = [
+      resources          = [
         {
           resource_name            = "ddb_table"
           resource_type            = "AWS::DynamoDB::Table"
@@ -72,7 +74,7 @@ module "resiliencehub_app" {
     {
       app_component_name = "SqsComponent"
       app_component_type = "AWS::ResilienceHub::QueueAppComponent"
-      resources = [
+      resources          = [
         {
           resource_name            = "sqs_queue"
           resource_type            = "AWS::SQS::Queue"
@@ -83,6 +85,8 @@ module "resiliencehub_app" {
       ]
     }
   ]
-  s3_state_file_url = local.s3_state_file_url
-  arh_role_name = local.arh_role_name
+  s3_bucket_name     = local.s3_bucket_name
+  s3_state_file_path = local.s3_state_file_path
+  s3_bucket_region   = local.s3_bucket_region
+  arh_role_name      = local.arh_role_name
 }
