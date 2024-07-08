@@ -6,6 +6,14 @@
 
 # checkov:skip=CKV_*
 
+locals {
+  s3_bucket_name     = "yalevy-terraform"
+  s3_state_file_path = "cross-region.tfstate"
+  s3_bucket_region   = "us-west-2"
+  app_name           = "Application-${random_string.session.id}"
+  arh_role_name      = "ArhExecutorRole-${random_string.session.id}"
+}
+
 terraform {
   required_providers {
     aws = {
@@ -21,12 +29,6 @@ terraform {
     key    = "$path/to/file.tfstate"
     region = "$BUCKET_REGION"
   }
-}
-
-locals {
-  s3_state_file_url = "https://$BUCKET.s3.$BUCKET_REGION.amazonaws.com/$path/to/file.tfstate"
-  app_name          = "Application-${random_string.session.id}"
-  arh_role_name     = "ArhExecutorRole-${random_string.session.id}"
 }
 
 resource "random_string" "session" {
@@ -69,6 +71,8 @@ module "resiliencehub_app" {
       ]
     },
   ]
-  s3_state_file_url = local.s3_state_file_url
-  arh_role_name     = local.arh_role_name
+  s3_bucket_name     = local.s3_bucket_name
+  s3_state_file_path = local.s3_state_file_path
+  s3_bucket_region   = local.s3_bucket_region
+  arh_role_name      = local.arh_role_name
 }

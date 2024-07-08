@@ -84,7 +84,9 @@ No modules.
 | <a name="input_arh_role_name"></a> [arh\_role\_name](#input\_arh\_role\_name) | Defines the role to be used by Resilience Hub | `string` | n/a | yes |
 | <a name="input_rpo"></a> [rpo](#input\_rpo) | RPO across all failure metrics | `number` | n/a | yes |
 | <a name="input_rto"></a> [rto](#input\_rto) | RTO across all failure metrics | `number` | n/a | yes |
-| <a name="input_s3_state_file_url"></a> [s3\_state\_file\_url](#input\_s3\_state\_file\_url) | An URL to s3-backend Terraform state-file | `string` | n/a | yes |
+| <a name="input_s3_bucket_name"></a> [s3\_bucket\_name](#input\_s3\_bucket\_name) | S3 bucket name containing the statefile | `string` | n/a | yes |
+| <a name="input_s3_bucket_region"></a> [s3\_bucket\_region](#input\_s3\_bucket\_region) | S3 bucket region containing the statefile | `string` | n/a | yes |
+| <a name="input_s3_state_file_path"></a> [s3\_state\_file\_path](#input\_s3\_state\_file\_path) | S3 bucket path containing the statefile, e.g - path/to/statefile.tf | `string` | n/a | yes |
 
 ## Outputs
 
